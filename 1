@@ -1,0 +1,62 @@
+-- Об'єднуємо всі таблиці для аналізу трендів
+SELECT 
+  'Top UA Terms' AS source_type,
+  term,
+  rank,
+  week,
+  score,
+  country_name,
+  region_name,
+  NULL AS dma_name,
+  NULL AS percent_gain,
+  refresh_date
+FROM `bigquery-public-data.google_trends.international_top_terms`
+WHERE country_name = 'Ukraine'
+
+UNION ALL
+
+SELECT 
+  'Top USA Rising' AS source_type,
+  term,
+  rank,
+  week,
+  score,
+  NULL AS country_name,
+  NULL AS region_name,
+  dma_name,
+  percent_gain,
+  refresh_date
+FROM `bigquery-public-data.google_trends.top_rising_terms`
+WHERE refresh_date = (SELECT MAX(refresh_date) FROM `bigquery-public-data.google_trends.top_rising_terms`)
+
+UNION ALL
+
+SELECT 
+  'Stable Top Terms' AS source_type,
+  term,
+  rank,
+  week,
+  score,
+  country_name,
+  region_name,
+  NULL AS dma_name,
+  NULL AS percent_gain,
+  refresh_date
+FROM `bigquery-public-data.google_trends.international_top_terms`
+WHERE rank <= 10  -- Тільки терміни, які стабільно в топ-10
+
+UNION ALL
+
+SELECT 
+  'Top Global Terms' AS source_type,
+  term,
+  rank,
+  week,
+  score,
+  NULL AS country_name,
+  NULL AS region_name,
+  dma_name,
+  NULL AS percent_gain,
+  refresh_date
+FROM `bigquery-public-data.google_trends.top_terms`
+WHERE dma_name IS NOT NULL;
